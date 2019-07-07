@@ -37,7 +37,7 @@ This can be as simple as adding an entry to `go` (or whatever short word you pre
 
 `pin-go` keeps the mapping of golinks in memory in the interest in returning a response as quickly as possible.
 
-If you make changes to your Pinboard golink mappings, simply hit the service at `/reload`. The new configuration will be fetched from Pinboard and replaced in memory.
+If you make changes to your Pinboard golink mappings, simply hit the service at `/refresh`. The new configuration will be fetched from Pinboard and replaced in memory.
 
 ## License
 
