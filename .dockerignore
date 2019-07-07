@@ -1,0 +1,4 @@
+/.git
+/target
+**/*.rs.bk
+README.md

@@ -1,13 +1,7 @@
 # select build image
-FROM rustlang/rust:nightly-slim as build
+FROM rustlang/rust:nightly@sha256:c1ad1cbe7bb7ca62eee1dcca62fae6f56b2bd3cfc284a113219cc15916ba7c64 as build
 
-# create a new empty shell project
-RUN USER=root cargo new --bin pin-go
-WORKDIR /pin-go
-
-# copy over your manifests
-COPY ./Cargo.lock ./Cargo.lock
-COPY ./Cargo.toml ./Cargo.toml
+COPY ./ ./
 
 # this build step will cache your dependencies
 RUN cargo build --release
@@ -17,14 +11,16 @@ RUN rm src/*.rs
 COPY ./src ./src
 
 # build for release
-RUN rm ./target/release/deps/pin-go*
+RUN rm ./target/release/deps/pin_go*
 RUN cargo build --release
 
 # our final base
-FROM rustlang/rust:nightly-slim
+FROM alpine
 
 # copy the build artifact from the build stage
-COPY --from=build /pin-go/target/release/pin-go .
+COPY --from=build ./target/release/pin-go .
+
+EXPOSE 8000
 
 # set the startup command to run your binary
 CMD ["./pin-go"]
