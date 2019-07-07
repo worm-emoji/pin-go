@@ -6,14 +6,25 @@ extern crate lazy_static;
 use regex::Regex;
 use reqwest;
 use rocket::http::hyper::header::Location;
+use rocket::State;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::env;
+use std::mem;
+use std::sync::{Arc, Mutex};
 
 #[derive(Serialize, Deserialize)]
 struct PinboardItem {
     href: String,
     tags: String,
+}
+
+struct Mappings {
+    pinboard: HashMap<String, String>,
+}
+
+struct SharedState {
+    mappings: std::sync::Arc<std::sync::Mutex<Mappings>>,
 }
 
 // Rocket's Redirect::to method isn't very good, and doesn't support things
@@ -33,7 +44,7 @@ fn tag_to_golink(tag: &str) -> Result<String, &str> {
     };
 }
 
-fn get_pinboard() -> Result<HashMap<String, String>, reqwest::Error> {
+fn get_pinboard() -> Result<Mappings, reqwest::Error> {
     let url = format!(
         "https://api.pinboard.in/v1/posts/all?auth_token={}&format=json&tag=go",
         env::var("PINBOARD").unwrap()
@@ -48,21 +59,33 @@ fn get_pinboard() -> Result<HashMap<String, String>, reqwest::Error> {
             _ => {}
         }
     }
-    return Ok(mapping);
+    println!("Fetched and mapped Pinboard bookmarks.");
+    return Ok(Mappings { pinboard: mapping });
+}
+
+#[get("/refresh")]
+fn refresh(state: State<SharedState>) -> String {
+    let new_mappings = get_pinboard().unwrap();
+    let mut mappings = state.mappings.lock().unwrap();
+    // Get a memory lock and replace the mappings with new ones
+    mem::replace(&mut *mappings, new_mappings);
+    return String::from("Refreshed.");
 }
 
 #[get("/<link>")]
-fn golink(link: String) -> RawRedirect {
-    let mapping = get_pinboard().expect("Error fetching pinboard mapping");
-    match mapping.get(&link) {
-        Some(url) => {
-            println!("{}", &url);
-            return RawRedirect((), Location(url.to_string()));
-        }
-        None => return RawRedirect((), Location(String::from("/not/found"))),
+fn golink(link: String, state: State<SharedState>) -> RawRedirect {
+    let mappings = state.mappings.clone();
+    let unlocked = mappings.lock().unwrap();
+    match unlocked.pinboard.get(&link) {
+        Some(url) => RawRedirect((), Location(url.to_string())),
+        None => RawRedirect((), Location(String::from("/not/found"))),
     }
 }
 
 fn main() {
-    rocket::ignite().mount("/", routes![golink]).launch();
+    let mapping = Arc::new(Mutex::new(get_pinboard().expect("Err")));
+    rocket::ignite()
+        .mount("/", routes![golink, refresh])
+        .manage(SharedState { mappings: mapping })
+        .launch();
 }
