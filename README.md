@@ -7,7 +7,7 @@ pin-go is a tiny Rust app that acts as a URL shortener using
 
 An example Pinboard bookmark looks like this:
 
-![](https://lukemil.es/Files/pin-example.png)
+![](./static/pin-example.png)
 
 This creates the link: [go/op-1](https://teenage.engineering/guides/op-1).
 
