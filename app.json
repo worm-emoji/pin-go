@@ -1,0 +1,9 @@
+{
+  "name": "pin-go",
+  "env": {
+    "PINBOARD": {
+      "description": "Pinboard API token, obtainable at https://pinboard.in/settings/password",
+      "required": true
+    }
+  }
+}

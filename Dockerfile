@@ -23,4 +23,4 @@ COPY --from=build ./target/release/pin-go .
 EXPOSE 8000
 
 # set the startup command to run your binary
-CMD ["./pin-go"]
+CMD ROCKET_PORT=$PORT ./pin-go

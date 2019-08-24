@@ -33,6 +33,8 @@ To make deploying pin-go easy, we've included a Dockerfile in this repo. Once yo
 
 This can be as simple as adding an entry to `go` (or whatever short word you prefer) in your `/etc/hosts`. To let me use my golinks on the go, I've set up a mapping at [NextDNS](https://nextdns.io) and use their iOS app.
 
+[![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.svg)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/ylukem/pin-go.git)
+
 ### Reloading the configuration
 
 `pin-go` keeps the mapping of golinks in memory in the interest in returning a response as quickly as possible.
